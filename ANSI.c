@@ -1105,12 +1105,15 @@ WINAPI MyWriteConsoleA( HANDLE hCon, LPCVOID lpBuffer,
     *lpNumberOfCharsWritten = 0;
     while (nNumberOfCharsToWrite)
     {
+      DWORD wLen;
+
+      // TODO: This is very fragile in case of UTF encodings. It can split the buffer in the "middle" of character.
       len = (nNumberOfCharsToWrite > BUF_SIZE) ? BUF_SIZE
 					       : nNumberOfCharsToWrite;
-      MultiByteToWideChar( cp, 0, lpBuffer, len, buf, len );
-      rc = ParseAndPrintString( hCon, buf, len, &Mode );
-      *lpNumberOfCharsWritten += Mode;
-      lpBuffer += len;
+      wLen = MultiByteToWideChar( cp, 0, lpBuffer, len, buf, len );
+      rc = ParseAndPrintString( hCon, buf, wLen, &Mode );
+      *lpNumberOfCharsWritten += len;
+      (LPCSTR) lpBuffer += len;
       nNumberOfCharsToWrite -= len;
     }
     return rc;
