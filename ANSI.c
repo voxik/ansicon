@@ -1100,8 +1100,9 @@ WINAPI MyWriteConsoleA( HANDLE hCon, LPCVOID lpBuffer,
   // if we write in a console buffer with processed output
   if (GetConsoleMode( hCon, &Mode ) && (Mode & ENABLE_PROCESSED_OUTPUT))
   {
+    LPSTR bufferPointer = (LPSTR) lpBuffer;
     UINT cp = GetConsoleOutputCP();
-    DEBUGSTR( TEXT("\\WriteConsoleA: %lu \"%.*hs\""), nNumberOfCharsToWrite, nNumberOfCharsToWrite, lpBuffer );
+    DEBUGSTR( TEXT("\\WriteConsoleA: %lu \"%.*hs\""), nNumberOfCharsToWrite, nNumberOfCharsToWrite, bufferPointer );
     *lpNumberOfCharsWritten = 0;
     while (nNumberOfCharsToWrite)
     {
@@ -1110,10 +1111,10 @@ WINAPI MyWriteConsoleA( HANDLE hCon, LPCVOID lpBuffer,
       // TODO: This is very fragile in case of UTF encodings. It can split the buffer in the "middle" of character.
       len = (nNumberOfCharsToWrite > BUF_SIZE) ? BUF_SIZE
 					       : nNumberOfCharsToWrite;
-      wLen = MultiByteToWideChar( cp, 0, lpBuffer, len, buf, len );
+      wLen = MultiByteToWideChar( cp, 0, bufferPointer, len, buf, len );
       rc = ParseAndPrintString( hCon, buf, wLen, &Mode );
       *lpNumberOfCharsWritten += len;
-      (LPCSTR) lpBuffer += len;
+      bufferPointer += len;
       nNumberOfCharsToWrite -= len;
     }
     return rc;
