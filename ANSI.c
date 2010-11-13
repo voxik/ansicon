@@ -1175,6 +1175,7 @@ WINAPI MyWriteFile( HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite,
 void set_ansicon( PCONSOLE_SCREEN_BUFFER_INFO pcsbi )
 {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
+  TCHAR buf[64];
 
   if (pcsbi == NULL)
   {
@@ -1187,7 +1188,6 @@ void set_ansicon( PCONSOLE_SCREEN_BUFFER_INFO pcsbi )
     pcsbi = &csbi;
   }
 
-  TCHAR buf[64];
   wsprintf( buf, TEXT("%dx%d (%dx%d)"),
 	    pcsbi->dwSize.X, pcsbi->dwSize.Y,
 	    pcsbi->srWindow.Right - pcsbi->srWindow.Left + 1,

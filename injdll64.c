@@ -20,6 +20,11 @@
 
 void InjectDLL64( LPPROCESS_INFORMATION ppi, LPCWSTR dll )
 {
+  union
+  {
+    PBYTE    pB;
+    PDWORD64 pL;
+  } ip;
   CONTEXT context;
   DWORD   len;
   LPVOID  mem;
@@ -81,11 +86,6 @@ void InjectDLL64( LPPROCESS_INFORMATION ppi, LPCWSTR dll )
 			PAGE_EXECUTE_READWRITE );
   LLW = (DWORD64)LoadLibraryW;
 
-  union
-  {
-    PBYTE    pB;
-    PDWORD64 pL;
-  } ip;
   ip.pB = code;
 
   *ip.pL++ = context.Rip;

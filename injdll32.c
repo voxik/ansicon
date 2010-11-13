@@ -20,8 +20,8 @@
 #ifdef _WIN64
 #include "wow64.h"
 
-TWow64GetThreadContext Wow64GetThreadContext;
-TWow64SetThreadContext Wow64SetThreadContext;
+TWow64GetThreadContext wow64GetThreadContext;
+TWow64SetThreadContext wow64SetThreadContext;
 
 #define CONTEXT 	 WOW64_CONTEXT
 #undef	CONTEXT_CONTROL
@@ -36,6 +36,12 @@ DWORD LLW;
 
 void InjectDLL32( LPPROCESS_INFORMATION ppi, LPCWSTR dll )
 {
+  union
+  {
+    PBYTE  pB;
+    PDWORD pL;
+  } ip;
+
   CONTEXT context;
   DWORD   len;
   LPVOID  mem;
@@ -51,16 +57,16 @@ void InjectDLL32( LPPROCESS_INFORMATION ppi, LPCWSTR dll )
   if (LLW == 0)
   {
 #ifdef _WIN64
-    extern HMODULE hKernel;
-    #define GETPROC( proc ) proc = (T##proc)GetProcAddress( hKernel, #proc )
-    GETPROC( Wow64GetThreadContext );
-    GETPROC( Wow64SetThreadContext );
-    // Assume if one is defined, so is the other.
-    if (Wow64GetThreadContext == 0)
-      return;
-
     STARTUPINFOW si;
     PROCESS_INFORMATION pi;
+    extern HMODULE hKernel;
+    #define GETPROC( proc ) (T##proc)GetProcAddress( hKernel, #proc )
+    wow64GetThreadContext = GETPROC( Wow64GetThreadContext );
+    wow64SetThreadContext = GETPROC( Wow64SetThreadContext );
+    // Assume if one is defined, so is the other.
+    if (wow64GetThreadContext == 0)
+      return;
+
     ZeroMemory( &si, sizeof(si) );
     si.cb = sizeof(si);
     // ...ANSI32.dll\0
@@ -88,11 +94,6 @@ void InjectDLL32( LPPROCESS_INFORMATION ppi, LPCWSTR dll )
 			PAGE_EXECUTE_READWRITE );
   mem32 = (DWORD)(DWORD_PTR)mem;
 
-  union
-  {
-    PBYTE  pB;
-    PDWORD pL;
-  } ip;
   ip.pB = code;
 
   *ip.pB++ = 0x68;			// push  eip

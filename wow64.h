@@ -10,6 +10,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#ifdef __MINGW32__
+
 #define WOW64_CONTEXT_i386	0x00010000
 
 #define WOW64_CONTEXT_CONTROL		    (WOW64_CONTEXT_i386 | 0x00000001L)
@@ -81,8 +83,9 @@ typedef struct _WOW64_CONTEXT {
 
 typedef WOW64_CONTEXT *PWOW64_CONTEXT;
 
+#endif
 
-typedef BOOL WINAPI (*TWow64GetThreadContext)( HANDLE hThread, PWOW64_CONTEXT lpContext );
-typedef BOOL WINAPI (*TWow64SetThreadContext)( HANDLE hThread, CONST WOW64_CONTEXT *lpContext );
+typedef BOOL (*TWow64GetThreadContext)( HANDLE hThread, PWOW64_CONTEXT lpContext );
+typedef BOOL (*TWow64SetThreadContext)( HANDLE hThread, CONST WOW64_CONTEXT *lpContext );
 
 #endif

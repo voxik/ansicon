@@ -45,8 +45,13 @@
 #define PVERS "1.31"
 #define PDATE "13 November, 2010"
 
-#define UNICODE
-#define _UNICODE
+#ifndef UNICODE
+  #define UNICODE
+#endif
+
+#ifndef _UNICODE
+  #define _UNICODE
+#endif
 
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0500	// MinGW wants this defined for OpenThread
@@ -158,7 +163,7 @@ int main( void )
     }
     if (lstrcmp( argv[1], TEXT("--version") ) == 0)
     {
-      _putts( TEXT("ANSICON (" BITS "-bit) version " PVERS " (" PDATE ").") );
+      _putts( TEXT("ANSICON (") BITS TEXT("-bit) version ") TEXT(PVERS) TEXT(" (") TEXT(PDATE) TEXT(").") );
       return rc;
     }
   }
@@ -223,7 +228,7 @@ int main( void )
   {
     ansi = 0;
     if (!installed)
-      ansi = LoadLibrary( TEXT("ANSI" BITS ".dll") );
+      ansi = LoadLibrary( TEXT("ANSI") BITS TEXT(".dll") );
 
     if (option && (argv[1][1] == 't' || argv[1][1] == 'T'))
     {
@@ -309,18 +314,22 @@ void print_error( LPCTSTR name, BOOL title )
 // Display a file.
 void display( LPCTSTR name, BOOL title )
 {
+  HANDLE file;
+  LARGE_INTEGER size;
+
   // Handle the pipe differently.
   if (*name == '-' && name[1] == '\0')
   {
+    int c;
+
     if (title)
       _puttchar( '\n' );
-    int c;
     while ((c = getchar()) != EOF)
       putchar( c );
     return;
   }
 
-  HANDLE file = CreateFile( name, GENERIC_READ, FILE_SHARE_READ, NULL,
+  file = CreateFile( name, GENERIC_READ, FILE_SHARE_READ, NULL,
 			    OPEN_EXISTING, 0, NULL );
   if (file == INVALID_HANDLE_VALUE)
   {
@@ -328,16 +337,16 @@ void display( LPCTSTR name, BOOL title )
     return;
   }
 
-  LARGE_INTEGER size;
   GetFileSizeEx( file, &size );
   if (size.QuadPart != 0)
   {
     HANDLE map = CreateFileMapping( file, NULL, PAGE_READONLY, 0, 0, NULL );
     if (map)
     {
+      LARGE_INTEGER offset;
+
       if (title)
 	_puttchar( '\n' );
-      LARGE_INTEGER offset;
       offset.QuadPart = 0;
       do
       {
@@ -515,32 +524,32 @@ LPTSTR skip_arg( LPTSTR cmd )
 
 void help( void )
 {
-  _putts( TEXT(
-"ANSICON by Jason Hood <jadoxa@yahoo.com.au>.\n"
-"Version " PVERS " (" PDATE ").  Freeware.\n"
-"http://ansicon.adoxa.cjb.net/\n"
-"\n"
+  _putts(
+TEXT("ANSICON by Jason Hood <jadoxa@yahoo.com.au>.\n")
+TEXT("Version ") TEXT(PVERS) TEXT(" (") TEXT(PDATE) TEXT(").  Freeware.\n")
+TEXT("http://ansicon.adoxa.cjb.net/\n")
+TEXT("\n")
 #ifdef _WIN64
-"Process ANSI escape sequences in Windows console programs.\n"
+TEXT("Process ANSI escape sequences in Windows console programs.\n")
 #else
-"Process ANSI escape sequences in Win32 console programs.\n"
+TEXT("Process ANSI escape sequences in Win32 console programs.\n")
 #endif
-"\n"
-"ansicon -i|I | -u|U\n"
-"ansicon [-m[<attr>]] [-p | -e|E string | -t|T [file(s)] | program [args]]\n"
-"\n"
-"  -i\t\tinstall - add ANSICON to the AutoRun entry\n"
-"  -u\t\tuninstall - remove ANSICON from the AutoRun entry\n"
-"  -I -U\t\tuse local machine instead of current user\n"
-"  -m\t\tuse grey on black (\"monochrome\") or <attr> as default color\n"
-"  -p\t\thook into the parent process\n"
-"  -e\t\techo string\n"
-"  -E\t\techo string, don't append newline\n"
-"  -t\t\tdisplay files (\"-\" for stdin), combined as a single stream\n"
-"  -T\t\tdisplay files, name first, blank line before and after\n"
-"  program\trun the specified program\n"
-"  nothing\trun a new command processor, or display stdin if redirected\n"
-"\n"
-"<attr> is one or two hexadecimal digits; please use \"COLOR /?\" for details."
-	      ) );
+TEXT("\n")
+TEXT("ansicon -i|I | -u|U\n")
+TEXT("ansicon [-m[<attr>]] [-p | -e|E string | -t|T [file(s)] | program [args]]\n")
+TEXT("\n")
+TEXT("  -i\t\tinstall - add ANSICON to the AutoRun entry\n")
+TEXT("  -u\t\tuninstall - remove ANSICON from the AutoRun entry\n")
+TEXT("  -I -U\t\tuse local machine instead of current user\n")
+TEXT("  -m\t\tuse grey on black (\"monochrome\") or <attr> as default color\n")
+TEXT("  -p\t\thook into the parent process\n")
+TEXT("  -e\t\techo string\n")
+TEXT("  -E\t\techo string, don't append newline\n")
+TEXT("  -t\t\tdisplay files (\"-\" for stdin), combined as a single stream\n")
+TEXT("  -T\t\tdisplay files, name first, blank line before and after\n")
+TEXT("  program\trun the specified program\n")
+TEXT("  nothing\trun a new command processor, or display stdin if redirected\n")
+TEXT("\n")
+TEXT("<attr> is one or two hexadecimal digits; please use \"COLOR /?\" for details.")
+	      );
 }
